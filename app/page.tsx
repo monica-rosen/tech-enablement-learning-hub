@@ -9,13 +9,22 @@ const lessons = [
   { id: "quiz", label: "Check it" },
 ];
 
+const quizQuestions = [
+  { question: "Cloud Grind sent a payment request to Stripe. What did the API do?", options: ["Processed the card itself", "Carried a defined request and returned Stripe’s answer", "Opened Stripe’s private systems"], correct: 1, note: "The API is the agreed-upon channel between the two services." },
+  { question: "In the restaurant analogy, what is the API?", options: ["The kitchen", "The customer", "The waiter"], correct: 2, note: "The waiter carries a valid order to the kitchen and brings the result back." },
+  { question: "What are the two basic parts of an API conversation?", options: ["Login and logout", "Request and response", "Upload and download"], correct: 1, note: "One side sends a request; the other returns a response." },
+  { question: "What does a 402 card-declined response mean in our demo?", options: ["The API broke", "The app lost its data", "The API worked and returned a failure the app can handle"], correct: 2, note: "A declined payment is still a valid, useful response." },
+  { question: "When a product says it ‘integrated AI,’ what usually happened?", options: ["It built a new AI model", "It called an AI service through an API", "It copied another app’s interface"], correct: 1, note: "The product sends a request to a model API and uses the response in its own interface." },
+];
+
 type CardState = "idle" | "sending" | "success" | "declined";
 
 export default function Home() {
   const [active, setActive] = useState(0);
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
   const [cardState, setCardState] = useState<CardState>("idle");
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [quizIndex, setQuizIndex] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState<(number | null)[]>(Array(quizQuestions.length).fill(null));
   const [completed, setCompleted] = useState<boolean[]>([false, false, false, false]);
 
   const progress = useMemo(() => completed.filter(Boolean).length * 25, [completed]);
@@ -33,6 +42,35 @@ export default function Home() {
       setCardState(digits === "4242424242424242" ? "success" : digits === "4000000000000002" ? "declined" : "declined");
       setCompleted((items) => items.map((item, i) => (i === 2 ? true : item)));
     }, 850);
+  }
+
+  function chooseAnswer(optionIndex: number) {
+    setQuizAnswers((items) => items.map((item, index) => index === quizIndex ? optionIndex : item));
+  }
+
+  function advanceQuiz() {
+    if (quizIndex < quizQuestions.length - 1) setQuizIndex((index) => index + 1);
+    else if (quizAnswers.every((answer, index) => answer === quizQuestions[index].correct)) setCompleted((items) => items.map(() => true));
+  }
+
+  function downloadBadge() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200; canvas.height = 1200;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.fillStyle = "#141413"; context.fillRect(0, 0, 1200, 1200);
+    context.strokeStyle = "#353531"; context.lineWidth = 3;
+    for (let radius = 180; radius < 700; radius += 110) { context.beginPath(); context.arc(600, 420, radius, 0, Math.PI * 2); context.stroke(); }
+    context.fillStyle = "#1d1c1a"; context.beginPath(); context.arc(600, 430, 290, 0, Math.PI * 2); context.fill();
+    context.strokeStyle = "#d97757"; context.lineWidth = 12; context.stroke();
+    context.fillStyle = "#d97757"; context.font = "700 54px Arial"; context.textAlign = "center"; context.fillText("API", 600, 370);
+    context.fillStyle = "#ffffff"; context.font = "700 190px Arial"; context.fillText("✓", 600, 555);
+    context.fillStyle = "#6a9bcc"; context.font = "700 28px Arial"; context.letterSpacing = "8px"; context.fillText("KNOWLEDGE BADGE", 600, 790);
+    context.fillStyle = "#ffffff"; context.font = "700 64px Arial"; context.fillText("API BASICS", 600, 885);
+    context.fillStyle = "#a7a79f"; context.font = "34px Arial"; context.fillText("Request out. Response back.", 600, 950);
+    context.fillStyle = "#d97757"; context.fillRect(390, 1010, 420, 4);
+    context.fillStyle = "#777770"; context.font = "24px Arial"; context.fillText("API, plainly · Back to Basics 01", 600, 1065);
+    const link = document.createElement("a"); link.download = "api-basics-badge.png"; link.href = canvas.toDataURL("image/png"); link.click();
   }
 
   return (
@@ -131,15 +169,20 @@ export default function Home() {
 
           <section className="lessonSection finalSection" id="quiz">
             <div className="sectionNumber blueText">04 · QUICK CHECK</div>
-            <h2>What did the API <span className="blueText">do?</span></h2>
-            <p className="sectionIntro">Cloud Grind sent a payment request to Stripe. Which statement is true?</p>
+            <div className="quizMeta"><span>Question {quizIndex + 1} of {quizQuestions.length}</span><span>{quizAnswers.filter((answer, index) => answer === quizQuestions[index].correct).length} correct</span></div>
+            <div className="quizDots">{quizQuestions.map((_, index) => <i key={index} className={`${index === quizIndex ? "current" : ""} ${quizAnswers[index] === quizQuestions[index].correct ? "done" : ""}`} />)}</div>
+            <h2>{quizQuestions[quizIndex].question}</h2>
+            <p className="sectionIntro">Choose the best answer. Get all five right to unlock your badge.</p>
             <div className="answers">
-              {["Cloud Grind processed the card itself.", "The API carried a defined request and returned Stripe’s answer.", "Stripe gave Cloud Grind access to its private systems."].map((option, index) => (
-                <button key={option} className={answer === option ? (index === 1 ? "correct" : "wrong") : ""} onClick={() => { setAnswer(option); if (index === 1) setCompleted((items) => items.map(() => true)); }}><span>{String.fromCharCode(65 + index)}</span>{option}<b>{answer === option ? (index === 1 ? "✓" : "×") : ""}</b></button>
-              ))}
+              {quizQuestions[quizIndex].options.map((option, index) => {
+                const selected = quizAnswers[quizIndex] === index;
+                const correct = index === quizQuestions[quizIndex].correct;
+                return <button key={option} className={selected ? (correct ? "correct" : "wrong") : ""} onClick={() => chooseAnswer(index)}><span>{String.fromCharCode(65 + index)}</span>{option}<b>{selected ? (correct ? "✓" : "×") : ""}</b></button>;
+              })}
             </div>
-            {answer && <div className={`feedback ${answer.includes("defined request") ? "good" : "tryAgain"}`}><strong>{answer.includes("defined request") ? "Exactly." : "Not quite."}</strong> {answer.includes("defined request") ? "The API is the agreed-upon channel between the two services." : "Remember the waiter: the go-between carries the order; it doesn’t cook the meal or reveal the kitchen."}</div>}
-            {progress === 100 && <div className="completeCard"><span>✓</span><div><small>LESSON COMPLETE</small><h3>You can now explain an API in plain English.</h3><p>Request out. Response back. A defined go-between makes it possible.</p></div><a href="#top">Start again ↑</a></div>}
+            {quizAnswers[quizIndex] !== null && <div className={`feedback ${quizAnswers[quizIndex] === quizQuestions[quizIndex].correct ? "good" : "tryAgain"}`}><strong>{quizAnswers[quizIndex] === quizQuestions[quizIndex].correct ? "Exactly." : "Try again."}</strong> {quizAnswers[quizIndex] === quizQuestions[quizIndex].correct ? quizQuestions[quizIndex].note : "Use the lesson above, then choose a different answer."}</div>}
+            <div className="quizActions">{quizIndex > 0 && <button className="backButton" onClick={() => setQuizIndex((index) => index - 1)}>← Previous</button>}<button className="continueButton" disabled={quizAnswers[quizIndex] !== quizQuestions[quizIndex].correct} onClick={advanceQuiz}>{quizIndex === quizQuestions.length - 1 ? "Finish check" : "Next question"} <span>→</span></button></div>
+            {progress === 100 && <div className="completeCard"><span>✓</span><div><small>5 / 5 · LESSON COMPLETE</small><h3>You earned the API Basics badge.</h3><p>Request out. Response back. A defined go-between makes it possible.</p></div><button className="badgeButton" onClick={downloadBadge}>Download badge ↓</button></div>}
           </section>
         </div>
       </div>
