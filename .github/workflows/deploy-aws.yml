@@ -27,6 +27,8 @@ jobs:
           cache: npm
 
       - name: Install, test, and build
+        env:
+          VITE_SUBSCRIBE_URL: ${{ vars.AWS_SUBSCRIBE_URL }}
         run: |
           npm install --global npm@11.6.2
           npm ci

@@ -1,4 +1,4 @@
-# API, plainly learning hub
+# Tech Enablement Learning Hub
 
 This is a portable static website. The production build is ordinary HTML, CSS,
 JavaScript, and image files with no server, database, or OpenAI runtime required.
@@ -20,6 +20,17 @@ Upload the contents of `dist/` to any static host. For services that build from
 the repository, use `npm run build` as the build command and `dist` as the
 publish directory.
 
+The course catalog lives at `/`. Each course has a durable subpath; the first
+course is available at `/api-basics/`.
+
+## Subscriber registration
+
+Subscriber registration is AWS-native. A Lambda Function URL receives the
+form, DynamoDB temporarily stores an expiring confirmation token, and Amazon
+SES stores confirmed contacts and manages unsubscribe preferences. Set the
+GitHub Actions repository variable `AWS_SUBSCRIBE_URL` to the stack's
+`SubscriberFunctionUrl` output to activate the form.
+
 ## AWS hosting
 
 `infrastructure/static-site.yml` creates a private, versioned S3 bucket and a
@@ -40,6 +51,8 @@ It also expects three repository variables:
 - `AWS_REGION`
 - `AWS_S3_BUCKET`
 - `AWS_CLOUDFRONT_DISTRIBUTION_ID`
+
+The optional `AWS_SUBSCRIBE_URL` variable activates subscriber registration.
 
 Using OIDC avoids storing a long-lived AWS access key in GitHub.
 

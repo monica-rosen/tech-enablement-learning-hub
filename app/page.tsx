@@ -19,7 +19,7 @@ const quizQuestions = [
 
 type CardState = "idle" | "sending" | "success" | "declined";
 
-export default function Home() {
+function ApiBasics() {
   const [active, setActive] = useState(0);
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
   const [cardState, setCardState] = useState<CardState>("idle");
@@ -190,4 +190,103 @@ export default function Home() {
       <footer><a className="brand" href="#top"><span className="brandMark">↗</span> API, plainly</a><p>Built for curious people, not just developers.</p><span>Back to Basics · Lesson 01</span></footer>
     </main>
   );
+}
+
+function LearningHub() {
+  const subscribeUrl = import.meta.env.VITE_SUBSCRIBE_URL as string | undefined;
+  const [subscribeState, setSubscribeState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function subscribe(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!subscribeUrl) return;
+    setSubscribeState("sending");
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch(subscribeUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: form.get("email"), website: form.get("website") }),
+      });
+      if (!response.ok) throw new Error("Subscription failed");
+      setSubscribeState("sent");
+      event.currentTarget.reset();
+    } catch {
+      setSubscribeState("error");
+    }
+  }
+
+  return (
+    <main className="hubPage">
+      <nav className="topbar" aria-label="Primary navigation">
+        <a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a>
+        <div className="navRight">
+          <a className="hubNavLink" href="#courses">Courses</a>
+          <a className="smallButton" href="#subscribe">Get new lessons</a>
+        </div>
+      </nav>
+
+      <section className="hubHero">
+        <div className="eyebrow"><span>LEARN BY DOING</span><i /> Plain English · Practical labs</div>
+        <h1>Technical ideas,<br /><em>made usable.</em></h1>
+        <p className="lede">Short, interactive lessons for curious people who want to understand the technology shaping their work—without getting buried in jargon.</p>
+        <div className="heroActions">
+          <a className="primaryButton" href="/api-basics/">Start with API basics <span>→</span></a>
+          <a className="hubTextLink" href="#subscribe">Get new lessons by email ↓</a>
+        </div>
+      </section>
+
+      <section className="courseShelf" id="courses">
+        <div className="shelfHead"><div><span>COURSE LIBRARY</span><h2>Start with one useful idea.</h2></div><p>Each course combines a walkthrough, a hands-on lab, a knowledge check and a badge.</p></div>
+        <div className="courseGrid">
+          <a className="courseCard featured" href="/api-basics/">
+            <div className="courseMeta"><span>AVAILABLE NOW</span><b>01</b></div>
+            <div className="courseIcon">API</div>
+            <h3>What is an API?</h3>
+            <p>See how software asks other software for something, then send a simulated payment request yourself.</p>
+            <div className="courseFoot"><span>7 min · Interactive lab</span><b>Start course →</b></div>
+          </a>
+          <div className="courseCard upcoming">
+            <div className="courseMeta blueText"><span>PLANNED</span><b>02</b></div>
+            <div className="courseIcon blueIcon">AWS</div>
+            <h3>How a website reaches you</h3>
+            <p>Follow a page from storage through a global delivery network to your browser.</p>
+            <div className="courseFoot"><span>AWS fundamentals</span><b>Coming next</b></div>
+          </div>
+          <div className="courseCard upcoming">
+            <div className="courseMeta blueText"><span>PLANNED</span><b>03</b></div>
+            <div className="courseIcon blueIcon">GIT</div>
+            <h3>What GitHub actually does</h3>
+            <p>Understand repositories, branches, changes and automated publishing as one visual workflow.</p>
+            <div className="courseFoot"><span>GitHub fundamentals</span><b>Coming soon</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="subscribeSection" id="subscribe">
+        <div className="subscribeCopy">
+          <span>STAY IN THE LOOP</span>
+          <h2>One useful technical idea at a time.</h2>
+          <p>Get new interactive lessons and practical explainers when they are ready. No daily noise.</p>
+        </div>
+        {subscribeUrl ? (
+          <form className="subscribeForm" onSubmit={subscribe}>
+            <label htmlFor="subscriber-email">Email address</label>
+            <div><input id="subscriber-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required /><button type="submit" disabled={subscribeState === "sending"}>{subscribeState === "sending" ? "Sending…" : "Subscribe"} <span>→</span></button></div>
+            <input className="websiteTrap" name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+            <small>You can unsubscribe anytime. Subscriber information stays in your AWS account.</small>
+            <p className={`subscribeMessage ${subscribeState}`} aria-live="polite">{subscribeState === "sent" ? "Check your inbox to confirm your subscription." : subscribeState === "error" ? "Something went wrong. Please try again." : ""}</p>
+          </form>
+        ) : (
+          <div className="subscribePending"><b>AWS subscriber registration is ready to deploy.</b><span>The form activates automatically when the AWS signup endpoint is added to GitHub.</span></div>
+        )}
+      </section>
+
+      <footer><a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a><p>Technical learning for curious people.</p><span>The Connective Tissue</span></footer>
+    </main>
+  );
+}
+
+export default function Home() {
+  const isApiCourse = typeof window !== "undefined" && window.location.pathname.startsWith("/api-basics");
+  return isApiCourse ? <ApiBasics /> : <LearningHub />;
 }
