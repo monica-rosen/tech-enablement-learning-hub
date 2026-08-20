@@ -1,0 +1,45 @@
+name: Deploy learning hub to AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the site
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install, test, and build
+        run: |
+          npm ci
+          npm test
+          npm run lint
+
+      - name: Connect to AWS
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload the site
+        run: aws s3 sync dist/ "s3://${{ vars.AWS_S3_BUCKET }}/" --delete
+
+      - name: Refresh CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "${{ vars.AWS_CLOUDFRONT_DISTRIBUTION_ID }}" --paths "/*"
