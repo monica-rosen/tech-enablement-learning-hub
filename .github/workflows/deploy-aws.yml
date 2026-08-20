@@ -33,25 +33,6 @@ jobs:
           npm test
           npm run lint
 
-      - name: Verify GitHub OIDC identity
-        shell: bash
-        run: |
-          response="$(curl --silent --show-error --fail \
-            --header "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")"
-          TOKEN_RESPONSE="$response" node <<'NODE'
-          const token = JSON.parse(process.env.TOKEN_RESPONSE).value;
-          const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-          const claims = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
-          console.log(JSON.stringify({
-            issuer: claims.iss,
-            audience: claims.aud,
-            subject: claims.sub,
-            repository: claims.repository,
-            ref: claims.ref,
-          }, null, 2));
-          NODE
-
       - name: Connect to AWS
         uses: aws-actions/configure-aws-credentials@v5
         with:
