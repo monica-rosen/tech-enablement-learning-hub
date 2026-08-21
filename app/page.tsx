@@ -195,6 +195,8 @@ function ApiBasics() {
 function LearningHub() {
   const subscribeUrl = import.meta.env.VITE_SUBSCRIBE_URL as string | undefined;
   const [subscribeState, setSubscribeState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [registered, setRegistered] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("learning-hub-registered") === "yes");
+  const [referralSource, setReferralSource] = useState("");
 
   async function subscribe(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -205,10 +207,22 @@ function LearningHub() {
       const response = await fetch(subscribeUrl, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: form.get("email"), website: form.get("website") }),
+        body: JSON.stringify({
+          name: form.get("name"),
+          email: form.get("email"),
+          contentRequest: form.get("contentRequest"),
+          referralSource: form.get("referralSource"),
+          referralOther: form.get("referralOther"),
+          consent: form.get("consent") === "yes",
+          consentVersion: "2026-08-21",
+          sourcePage: window.location.pathname,
+          website: form.get("website"),
+        }),
       });
-      if (!response.ok) throw new Error("Subscription failed");
+      if (!response.ok) throw new Error("Registration failed");
       setSubscribeState("sent");
+      setRegistered(true);
+      window.localStorage.setItem("learning-hub-registered", "yes");
       event.currentTarget.reset();
     } catch {
       setSubscribeState("error");
@@ -221,7 +235,7 @@ function LearningHub() {
         <a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a>
         <div className="navRight">
           <a className="hubNavLink" href="#courses">Courses</a>
-          <a className="smallButton" href="#subscribe">Get new lessons</a>
+          <a className="smallButton" href="#register">Register</a>
         </div>
       </nav>
 
@@ -230,20 +244,20 @@ function LearningHub() {
         <h1>Technical ideas,<br /><em>made usable.</em></h1>
         <p className="lede">Short, interactive lessons for curious people who want to understand the technology shaping their work—without getting buried in jargon.</p>
         <div className="heroActions">
-          <a className="primaryButton" href="/api-basics/">Start with API basics <span>→</span></a>
-          <a className="hubTextLink" href="#subscribe">Get new lessons by email ↓</a>
+          <a className="primaryButton" href={registered ? "/api-basics/" : "#register"}>{registered ? "Start with API basics" : "Register to start"} <span>→</span></a>
+          <a className="hubTextLink" href="#courses">Explore the course library ↓</a>
         </div>
       </section>
 
       <section className="courseShelf" id="courses">
         <div className="shelfHead"><div><span>COURSE LIBRARY</span><h2>Start with one useful idea.</h2></div><p>Each course combines a walkthrough, a hands-on lab, a knowledge check and a badge.</p></div>
         <div className="courseGrid">
-          <a className="courseCard featured" href="/api-basics/">
+          <a className="courseCard featured" href={registered ? "/api-basics/" : "#register"}>
             <div className="courseMeta"><span>AVAILABLE NOW</span><b>01</b></div>
             <div className="courseIcon">API</div>
             <h3>What is an API?</h3>
             <p>See how software asks other software for something, then send a simulated payment request yourself.</p>
-            <div className="courseFoot"><span>7 min · Interactive lab</span><b>Start course →</b></div>
+            <div className="courseFoot"><span>7 min · Interactive lab</span><b>{registered ? "Start course →" : "Register to unlock →"}</b></div>
           </a>
           <div className="courseCard upcoming">
             <div className="courseMeta blueText"><span>PLANNED</span><b>02</b></div>
@@ -262,22 +276,39 @@ function LearningHub() {
         </div>
       </section>
 
-      <section className="subscribeSection" id="subscribe">
+      <section className="subscribeSection" id="register">
         <div className="subscribeCopy">
-          <span>STAY IN THE LOOP</span>
-          <h2>One useful technical idea at a time.</h2>
-          <p>Get new interactive lessons and practical explainers when they are ready. No daily noise.</p>
+          <span>REGISTER TO LEARN</span>
+          <h2>Help shape what gets built next.</h2>
+          <p>Tell me a little about yourself and what you want to learn. Your answers help prioritize future practical lessons.</p>
         </div>
-        {subscribeUrl ? (
+        {registered ? (
+          <div className="registrationComplete"><span>✓</span><div><b>You&apos;re registered.</b><p>The API Basics course is unlocked on this device.</p><a className="smallButton" href="/api-basics/">Start learning →</a></div></div>
+        ) : subscribeUrl ? (
           <form className="subscribeForm" onSubmit={subscribe}>
+            <label htmlFor="viewer-name">First name</label>
+            <input id="viewer-name" name="name" type="text" placeholder="Your first name" autoComplete="given-name" required maxLength={80} />
             <label htmlFor="subscriber-email">Email address</label>
-            <div><input id="subscriber-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required /><button type="submit" disabled={subscribeState === "sending"}>{subscribeState === "sending" ? "Sending…" : "Subscribe"} <span>→</span></button></div>
+            <input id="subscriber-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required />
+            <label htmlFor="content-request">What type of content would you most like to see?</label>
+            <textarea id="content-request" name="contentRequest" placeholder="For example: AWS basics, automation, data, or AI workflows" rows={4} required maxLength={1000} />
+            <label htmlFor="referral-source">How did you get here?</label>
+            <select id="referral-source" name="referralSource" required value={referralSource} onChange={(event) => setReferralSource(event.target.value)}>
+              <option value="">Choose one</option>
+              <option value="youtube">YouTube</option>
+              <option value="blog">The Connective Tissue blog</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="other">Other</option>
+            </select>
+            {referralSource === "other" && <><label htmlFor="referral-other">Where did you find us?</label><input id="referral-other" name="referralOther" type="text" placeholder="Tell us where" required maxLength={120} /></>}
+            <label className="consentCheck"><input name="consent" type="checkbox" value="yes" required /><span>I agree that The Connective Tissue may store this information to understand and improve its learning audience.</span></label>
+            <button className="registerButton" type="submit" disabled={subscribeState === "sending"}>{subscribeState === "sending" ? "Registering…" : "Register and unlock the course"} <span>→</span></button>
             <input className="websiteTrap" name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-            <small>You can unsubscribe anytime. Subscriber information stays in your AWS account.</small>
-            <p className={`subscribeMessage ${subscribeState}`} aria-live="polite">{subscribeState === "sent" ? "Check your inbox to confirm your subscription." : subscribeState === "error" ? "Something went wrong. Please try again." : ""}</p>
+            <small>Your information is stored privately in the learning hub&apos;s AWS account. You will not be added to an email list.</small>
+            <p className={`subscribeMessage ${subscribeState}`} aria-live="polite">{subscribeState === "sent" ? "Registration complete. The course is unlocked." : subscribeState === "error" ? "Something went wrong. Please try again." : ""}</p>
           </form>
         ) : (
-          <div className="subscribePending"><b>AWS subscriber registration is ready to deploy.</b><span>The form activates automatically when the AWS signup endpoint is added to GitHub.</span></div>
+          <div className="subscribePending"><b>AWS viewer registration is ready to deploy.</b><span>The form activates automatically when the AWS registration endpoint is added to GitHub.</span></div>
         )}
       </section>
 

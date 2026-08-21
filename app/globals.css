@@ -54,14 +54,22 @@ a.courseCard:hover { transform:translateY(-4px); border-color:var(--orange); }
 .courseFoot b { color:#c7c7bf; }
 .subscribeSection { max-width:1200px; margin:auto; padding:100px 32px; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
 .subscribeCopy p { color:var(--muted); line-height:1.6; max-width:510px; }
-.subscribeForm label { display:block; color:#aaa9a2; font-size:11px; margin-bottom:9px; }
-.subscribeForm>div { display:flex; }
-.subscribeForm input[type=email] { flex:1; min-width:0; background:#1a1a18; color:#fff; border:1px solid #45453f; border-right:0; border-radius:9px 0 0 9px; padding:16px; }
-.subscribeForm button { border:0; border-radius:0 9px 9px 0; padding:0 19px; background:var(--orange); color:#191816; font-weight:750; cursor:pointer; }
+.subscribeForm { display:grid; gap:10px; }
+.subscribeForm label { display:block; color:#aaa9a2; font-size:11px; margin-top:7px; }
+.subscribeForm input:not([type=checkbox]),.subscribeForm textarea,.subscribeForm select { width:100%; background:#1a1a18; color:#fff; border:1px solid #45453f; border-radius:9px; padding:14px 16px; font:inherit; }
+.subscribeForm textarea { resize:vertical; min-height:112px; }
+.subscribeForm select { appearance:auto; }
+.subscribeForm .consentCheck { display:flex; gap:10px; align-items:flex-start; line-height:1.45; margin:9px 0 2px; }
+.consentCheck input { margin-top:3px; accent-color:var(--orange); }
+.subscribeForm .registerButton { min-height:52px; border:0; border-radius:9px; padding:0 19px; background:var(--orange); color:#191816; font-weight:750; cursor:pointer; }
+.subscribeForm .registerButton:disabled { cursor:wait; opacity:.7; }
 .subscribeForm small { display:block; color:#6f6f69; margin-top:11px; font-size:9px; }
 .websiteTrap { position:absolute!important; left:-10000px!important; width:1px!important; height:1px!important; opacity:0!important; }
 .subscribeMessage { min-height:18px; margin:10px 0 0; font-size:11px; }.subscribeMessage.sent { color:var(--green); }.subscribeMessage.error { color:var(--red); }
 .subscribePending { border:1px dashed #55554f; background:var(--panel); border-radius:10px; padding:22px; display:flex; flex-direction:column; gap:7px; }
 .subscribePending b { font-size:14px; }.subscribePending span { color:var(--muted); font-size:12px; line-height:1.5; }
+.registrationComplete { border:1px solid #43634c; background:#18211b; border-radius:12px; padding:28px; display:flex; gap:18px; align-items:flex-start; }
+.registrationComplete>span { width:40px; height:40px; border-radius:50%; background:var(--green); color:#122016; display:grid; place-items:center; font-weight:800; }
+.registrationComplete b { font-size:20px; }.registrationComplete p { color:var(--muted); margin:5px 0 20px; font-size:12px; }
 @media (max-width:900px) { .courseGrid { grid-template-columns:1fr; }.courseCard { min-height:330px; }.courseIcon { margin-top:32px; }.subscribeSection { grid-template-columns:1fr; gap:35px; }.shelfHead { align-items:flex-start; flex-direction:column; gap:10px; } }
-@media (max-width:600px) { .hubHero { padding:78px 20px 60px; min-height:590px; }.courseShelf,.subscribeSection { padding:65px 20px; }.hubNavLink { display:none; }.subscribeForm>div { flex-direction:column; gap:8px; }.subscribeForm input[type=email],.subscribeForm button { min-height:50px; border:1px solid #45453f; border-radius:8px; }.subscribeForm button { border-color:var(--orange); }.courseCard { min-height:350px; } }
+@media (max-width:600px) { .hubHero { padding:78px 20px 60px; min-height:590px; }.courseShelf,.subscribeSection { padding:65px 20px; }.hubNavLink { display:none; }.courseCard { min-height:350px; } }

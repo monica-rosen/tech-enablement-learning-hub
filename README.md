@@ -23,13 +23,13 @@ publish directory.
 The course catalog lives at `/`. Each course has a durable subpath; the first
 course is available at `/api-basics/`.
 
-## Subscriber registration
+## Viewer registration
 
-Subscriber registration is AWS-native. A Lambda Function URL receives the
-form, DynamoDB temporarily stores an expiring confirmation token, and Amazon
-SES stores confirmed contacts and manages unsubscribe preferences. Set the
-GitHub Actions repository variable `AWS_SUBSCRIBE_URL` to the stack's
-`SubscriberFunctionUrl` output to activate the form.
+Viewer registration is AWS-native. API Gateway receives the form, Lambda
+validates it, and DynamoDB stores the registered learner and their content
+interests. No email is sent and Amazon SES is not required. Set the GitHub
+Actions repository variable `AWS_SUBSCRIBE_URL` to the stack's
+`ViewerRegistrationUrl` output to activate the form.
 
 ## AWS hosting
 
@@ -52,7 +52,7 @@ It also expects three repository variables:
 - `AWS_S3_BUCKET`
 - `AWS_CLOUDFRONT_DISTRIBUTION_ID`
 
-The optional `AWS_SUBSCRIBE_URL` variable activates subscriber registration.
+The optional `AWS_SUBSCRIBE_URL` variable activates viewer registration.
 
 Using OIDC avoids storing a long-lived AWS access key in GitHub.
 

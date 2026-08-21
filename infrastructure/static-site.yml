@@ -13,11 +13,11 @@ Parameters:
   SubscriberSenderEmail:
     Type: String
     Default: learn@theconnectivetissue.co
-    Description: Verified Amazon SES sender used for confirmation emails
+    Description: Reserved for the existing SES setup; viewer registration does not send email
   SubscriberEmailDomain:
     Type: String
     Default: theconnectivetissue.co
-    Description: Domain identity verified with Amazon SES for sending
+    Description: Existing verified SES identity retained for safety but unused by viewer registration
   SubscriberAllowedOrigin:
     Type: String
     Default: https://learn.theconnectivetissue.co
@@ -106,9 +106,11 @@ Resources:
 
   SubscriberContactList:
     Type: AWS::SES::ContactList
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       ContactListName: tech-enablement-learning-hub
-      Description: Confirmed subscribers to the Tech Enablement Learning Hub
+      Description: Legacy contact list retained but unused by viewer registration
       Topics:
         - TopicName: new-lessons
           DisplayName: New learning-hub lessons
@@ -117,11 +119,15 @@ Resources:
 
   SubscriberEmailIdentity:
     Type: AWS::SES::EmailIdentity
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       EmailIdentity: !Ref SubscriberEmailDomain
 
   SubscriberConfirmationTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
@@ -133,6 +139,19 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: expiresAt
         Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  ViewerRegistrationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
       SSESpecification:
         SSEEnabled: true
 
@@ -149,27 +168,19 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: ManageSubscriberConfirmations
+        - PolicyName: StoreViewerRegistrations
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
-                  - dynamodb:GetItem
-                  - dynamodb:DeleteItem
-                Resource: !GetAtt SubscriberConfirmationTable.Arn
-              - Effect: Allow
-                Action:
-                  - ses:SendEmail
-                  - ses:CreateContact
-                  - ses:UpdateContact
-                Resource: "*"
+                Resource: !GetAtt ViewerRegistrationTable.Arn
 
   SubscriberFunction:
     Type: AWS::Lambda::Function
     Properties:
-      Description: Confirmed opt-in registration for the Tech Enablement Learning Hub
+      Description: Stores learner registration and content-interest responses
       Runtime: nodejs22.x
       Handler: index.handler
       Role: !GetAtt SubscriberFunctionRole.Arn
@@ -177,70 +188,44 @@ Resources:
       MemorySize: 128
       Environment:
         Variables:
-          TABLE_NAME: !Ref SubscriberConfirmationTable
-          CONTACT_LIST: !Ref SubscriberContactList
-          CONTACT_TOPIC: new-lessons
-          SENDER_EMAIL: !Ref SubscriberSenderEmail
+          TABLE_NAME: !Ref ViewerRegistrationTable
           ALLOWED_ORIGIN: !Ref SubscriberAllowedOrigin
-          SITE_URL: !Ref SubscriberAllowedOrigin
       Code:
         ZipFile: |
-          const crypto = require("node:crypto");
-          const { DynamoDBClient, PutItemCommand, GetItemCommand, DeleteItemCommand } = require("@aws-sdk/client-dynamodb");
-          const { SESv2Client, SendEmailCommand, CreateContactCommand, UpdateContactCommand } = require("@aws-sdk/client-sesv2");
+          const { DynamoDBClient, PutItemCommand } = require("@aws-sdk/client-dynamodb");
           const db = new DynamoDBClient({});
-          const ses = new SESv2Client({});
           const json = (statusCode, body) => ({ statusCode, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
           exports.handler = async (event) => {
             const method = event.requestContext?.http?.method || "";
-            if (method === "POST") {
-              const origin = event.headers?.origin || event.headers?.Origin;
-              if (origin && origin !== process.env.ALLOWED_ORIGIN) return json(403, { message: "Origin not allowed" });
-              let input;
-              try { input = JSON.parse(event.body || "{}"); } catch { return json(400, { message: "Invalid request" }); }
-              if (input.website) return json(202, { message: "Check your inbox" });
-              const email = String(input.email || "").trim().toLowerCase();
-              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return json(400, { message: "Enter a valid email" });
-              const token = crypto.randomUUID();
-              const expiresAt = Math.floor(Date.now() / 1000) + 86400;
-              await db.send(new PutItemCommand({ TableName: process.env.TABLE_NAME, Item: { token: { S: token }, email: { S: email }, expiresAt: { N: String(expiresAt) } } }));
-              const endpoint = `https://${event.requestContext.domainName}/confirm?token=${encodeURIComponent(token)}`;
-              try {
-                await ses.send(new SendEmailCommand({
-                  FromEmailAddress: process.env.SENDER_EMAIL,
-                  Destination: { ToAddresses: [email] },
-                  Content: { Simple: {
-                    Subject: { Data: "Confirm your Tech Enablement subscription" },
-                    Body: {
-                      Text: { Data: `Confirm your subscription: ${endpoint}\n\nThis link expires in 24 hours.` },
-                      Html: { Data: `<h1>One quick confirmation</h1><p>Confirm that you want new Tech Enablement lessons by email.</p><p><a href="${endpoint}">Confirm subscription</a></p><p>This link expires in 24 hours.</p>` }
-                    }
-                  } }
-                }));
-              } catch (error) {
-                await db.send(new DeleteItemCommand({ TableName: process.env.TABLE_NAME, Key: { token: { S: token } } }));
-                throw error;
+            if (method !== "POST") return json(405, { message: "Method not allowed" });
+            const origin = event.headers?.origin || event.headers?.Origin;
+            if (origin && origin !== process.env.ALLOWED_ORIGIN) return json(403, { message: "Origin not allowed" });
+            let input;
+            try { input = JSON.parse(event.body || "{}"); } catch { return json(400, { message: "Invalid request" }); }
+            if (input.website) return json(202, { message: "Registration complete" });
+            const clean = (value, limit) => String(value || "").trim().slice(0, limit);
+            const email = clean(input.email, 254).toLowerCase();
+            const name = clean(input.name, 80);
+            const contentRequest = clean(input.contentRequest, 1000);
+            const referralSource = clean(input.referralSource, 40);
+            const referralOther = clean(input.referralOther, 120);
+            const sourcePage = clean(input.sourcePage, 200);
+            const consentVersion = clean(input.consentVersion, 30);
+            const allowedSources = new Set(["youtube", "blog", "linkedin", "other"]);
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name || !contentRequest) return json(400, { message: "Complete all required fields" });
+            if (!allowedSources.has(referralSource) || (referralSource === "other" && !referralOther)) return json(400, { message: "Choose how you found the hub" });
+            if (input.consent !== true || !consentVersion) return json(400, { message: "Consent is required" });
+            const createdAt = new Date().toISOString();
+            await db.send(new PutItemCommand({
+              TableName: process.env.TABLE_NAME,
+              Item: {
+                email: { S: email }, name: { S: name }, contentRequest: { S: contentRequest },
+                referralSource: { S: referralSource }, referralOther: { S: referralOther },
+                sourcePage: { S: sourcePage }, consent: { BOOL: true },
+                consentVersion: { S: consentVersion }, createdAt: { S: createdAt }
               }
-              return json(202, { message: "Check your inbox" });
-            }
-            if (method === "GET") {
-              const token = event.queryStringParameters?.token;
-              if (!token) return json(400, { message: "Missing confirmation token" });
-              const result = await db.send(new GetItemCommand({ TableName: process.env.TABLE_NAME, Key: { token: { S: token } }, ConsistentRead: true }));
-              const email = result.Item?.email?.S;
-              const expiresAt = Number(result.Item?.expiresAt?.N || 0);
-              if (!email || expiresAt < Math.floor(Date.now() / 1000)) return json(400, { message: "This confirmation link has expired" });
-              const preferences = [{ TopicName: process.env.CONTACT_TOPIC, SubscriptionStatus: "OPT_IN" }];
-              try {
-                await ses.send(new CreateContactCommand({ ContactListName: process.env.CONTACT_LIST, EmailAddress: email, UnsubscribeAll: false, TopicPreferences: preferences, AttributesData: JSON.stringify({ source: "learning-hub" }) }));
-              } catch (error) {
-                if (error.name !== "AlreadyExistsException") throw error;
-                await ses.send(new UpdateContactCommand({ ContactListName: process.env.CONTACT_LIST, EmailAddress: email, UnsubscribeAll: false, TopicPreferences: preferences, AttributesData: JSON.stringify({ source: "learning-hub" }) }));
-              }
-              await db.send(new DeleteItemCommand({ TableName: process.env.TABLE_NAME, Key: { token: { S: token } } }));
-              return { statusCode: 302, headers: { location: `${process.env.SITE_URL}/?subscribed=1#subscribe` }, body: "" };
-            }
-            return json(405, { message: "Method not allowed" });
+            }));
+            return json(201, { message: "Registration complete" });
           };
 
   SubscriberApi:
@@ -253,7 +238,6 @@ Resources:
           - !Ref SubscriberAllowedOrigin
         AllowMethods:
           - POST
-          - GET
         AllowHeaders:
           - content-type
         MaxAge: 86400
@@ -271,13 +255,6 @@ Resources:
     Properties:
       ApiId: !Ref SubscriberApi
       RouteKey: POST /subscribe
-      Target: !Sub integrations/${SubscriberApiIntegration}
-
-  SubscriberConfirmRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref SubscriberApi
-      RouteKey: GET /confirm
       Target: !Sub integrations/${SubscriberApiIntegration}
 
   SubscriberApiStage:
@@ -308,27 +285,9 @@ Outputs:
   CloudFrontDomainName:
     Description: Temporary address to test before changing Wix DNS
     Value: !GetAtt Distribution.DomainName
-  SubscriberFunctionUrl:
+  ViewerRegistrationUrl:
     Description: Add this value to the GitHub repository variable AWS_SUBSCRIBE_URL
     Value: !Sub https://${SubscriberApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/subscribe
-  SubscriberContactListName:
-    Description: Amazon SES contact list containing confirmed subscribers
-    Value: !Ref SubscriberContactList
-  SubscriberDkimName1:
-    Description: First Wix DNS CNAME name for SES verification
-    Value: !GetAtt SubscriberEmailIdentity.DkimDNSTokenName1
-  SubscriberDkimValue1:
-    Description: First Wix DNS CNAME value for SES verification
-    Value: !GetAtt SubscriberEmailIdentity.DkimDNSTokenValue1
-  SubscriberDkimName2:
-    Description: Second Wix DNS CNAME name for SES verification
-    Value: !GetAtt SubscriberEmailIdentity.DkimDNSTokenName2
-  SubscriberDkimValue2:
-    Description: Second Wix DNS CNAME value for SES verification
-    Value: !GetAtt SubscriberEmailIdentity.DkimDNSTokenValue2
-  SubscriberDkimName3:
-    Description: Third Wix DNS CNAME name for SES verification
-    Value: !GetAtt SubscriberEmailIdentity.DkimDNSTokenName3
-  SubscriberDkimValue3:
-    Description: Third Wix DNS CNAME value for SES verification
-    Value: !GetAtt SubscriberEmailIdentity.DkimDNSTokenValue3
+  ViewerRegistrationTableName:
+    Description: DynamoDB table containing registered learners and their content interests
+    Value: !Ref ViewerRegistrationTable
