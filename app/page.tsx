@@ -19,7 +19,7 @@ const quizQuestions = [
 
 type CardState = "idle" | "sending" | "success" | "declined";
 
-export default function Home() {
+function ApiBasics() {
   const [active, setActive] = useState(0);
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
   const [cardState, setCardState] = useState<CardState>("idle");
@@ -190,4 +190,134 @@ export default function Home() {
       <footer><a className="brand" href="#top"><span className="brandMark">↗</span> API, plainly</a><p>Built for curious people, not just developers.</p><span>Back to Basics · Lesson 01</span></footer>
     </main>
   );
+}
+
+function LearningHub() {
+  const subscribeUrl = import.meta.env.VITE_SUBSCRIBE_URL as string | undefined;
+  const [subscribeState, setSubscribeState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [registered, setRegistered] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("learning-hub-registered") === "yes");
+  const [referralSource, setReferralSource] = useState("");
+
+  async function subscribe(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!subscribeUrl) return;
+    setSubscribeState("sending");
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch(subscribeUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: form.get("name"),
+          email: form.get("email"),
+          contentRequest: form.get("contentRequest"),
+          referralSource: form.get("referralSource"),
+          referralOther: form.get("referralOther"),
+          consent: form.get("consent") === "yes",
+          consentVersion: "2026-08-21",
+          sourcePage: window.location.pathname,
+          website: form.get("website"),
+        }),
+      });
+      if (!response.ok) throw new Error("Registration failed");
+      setSubscribeState("sent");
+      setRegistered(true);
+      window.localStorage.setItem("learning-hub-registered", "yes");
+      event.currentTarget.reset();
+    } catch {
+      setSubscribeState("error");
+    }
+  }
+
+  return (
+    <main className="hubPage">
+      <nav className="topbar" aria-label="Primary navigation">
+        <a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a>
+        <div className="navRight">
+          <a className="hubNavLink" href="#courses">Courses</a>
+          <a className="smallButton" href="#register">Register</a>
+        </div>
+      </nav>
+
+      <section className="hubHero">
+        <div className="eyebrow"><span>LEARN BY DOING</span><i /> Plain English · Practical labs</div>
+        <h1>Technical ideas,<br /><em>made usable.</em></h1>
+        <p className="lede">Short, interactive lessons for curious people who want to understand the technology shaping their work—without getting buried in jargon.</p>
+        <div className="heroActions">
+          <a className="primaryButton" href={registered ? "/api-basics/" : "#register"}>{registered ? "Start with API basics" : "Register to start"} <span>→</span></a>
+          <a className="hubTextLink" href="#courses">Explore the course library ↓</a>
+        </div>
+      </section>
+
+      <section className="courseShelf" id="courses">
+        <div className="shelfHead"><div><span>COURSE LIBRARY</span><h2>Start with one useful idea.</h2></div><p>Each course combines a walkthrough, a hands-on lab, a knowledge check and a badge.</p></div>
+        <div className="courseGrid">
+          <a className="courseCard featured" href={registered ? "/api-basics/" : "#register"}>
+            <div className="courseMeta"><span>AVAILABLE NOW</span><b>01</b></div>
+            <div className="courseIcon">API</div>
+            <h3>What is an API?</h3>
+            <p>See how software asks other software for something, then send a simulated payment request yourself.</p>
+            <div className="courseFoot"><span>7 min · Interactive lab</span><b>{registered ? "Start course →" : "Register to unlock →"}</b></div>
+          </a>
+          <div className="courseCard upcoming">
+            <div className="courseMeta blueText"><span>PLANNED</span><b>02</b></div>
+            <div className="courseIcon blueIcon">AWS</div>
+            <h3>How a website reaches you</h3>
+            <p>Follow a page from storage through a global delivery network to your browser.</p>
+            <div className="courseFoot"><span>AWS fundamentals</span><b>Coming next</b></div>
+          </div>
+          <div className="courseCard upcoming">
+            <div className="courseMeta blueText"><span>PLANNED</span><b>03</b></div>
+            <div className="courseIcon blueIcon">GIT</div>
+            <h3>What GitHub actually does</h3>
+            <p>Understand repositories, branches, changes and automated publishing as one visual workflow.</p>
+            <div className="courseFoot"><span>GitHub fundamentals</span><b>Coming soon</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section className="subscribeSection" id="register">
+        <div className="subscribeCopy">
+          <span>REGISTER TO LEARN</span>
+          <h2>Help shape what gets built next.</h2>
+          <p>Tell me a little about yourself and what you want to learn. Your answers help prioritize future practical lessons.</p>
+        </div>
+        {registered ? (
+          <div className="registrationComplete"><span>✓</span><div><b>You&apos;re registered.</b><p>The API Basics course is unlocked on this device.</p><a className="smallButton" href="/api-basics/">Start learning →</a></div></div>
+        ) : subscribeUrl ? (
+          <form className="subscribeForm" onSubmit={subscribe}>
+            <label htmlFor="viewer-name">First name</label>
+            <input id="viewer-name" name="name" type="text" placeholder="Your first name" autoComplete="given-name" required maxLength={80} />
+            <label htmlFor="subscriber-email">Email address</label>
+            <input id="subscriber-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required />
+            <label htmlFor="content-request">What type of content would you most like to see?</label>
+            <textarea id="content-request" name="contentRequest" placeholder="For example: AWS basics, automation, data, or AI workflows" rows={4} required maxLength={1000} />
+            <label htmlFor="referral-source">How did you get here?</label>
+            <select id="referral-source" name="referralSource" required value={referralSource} onChange={(event) => setReferralSource(event.target.value)}>
+              <option value="">Choose one</option>
+              <option value="youtube">YouTube</option>
+              <option value="blog">The Connective Tissue blog</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="other">Other</option>
+            </select>
+            {referralSource === "other" && <><label htmlFor="referral-other">Where did you find us?</label><input id="referral-other" name="referralOther" type="text" placeholder="Tell us where" required maxLength={120} /></>}
+            <label className="consentCheck"><input name="consent" type="checkbox" value="yes" required /><span>I agree that The Connective Tissue may store this information to understand and improve its learning audience.</span></label>
+            <button className="registerButton" type="submit" disabled={subscribeState === "sending"}>{subscribeState === "sending" ? "Registering…" : "Register and unlock the course"} <span>→</span></button>
+            <input className="websiteTrap" name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+            <small>Your information is stored privately in the learning hub&apos;s AWS account. You will not be added to an email list.</small>
+            <p className={`subscribeMessage ${subscribeState}`} aria-live="polite">{subscribeState === "sent" ? "Registration complete. The course is unlocked." : subscribeState === "error" ? "Something went wrong. Please try again." : ""}</p>
+          </form>
+        ) : (
+          <div className="subscribePending"><b>AWS viewer registration is ready to deploy.</b><span>The form activates automatically when the AWS registration endpoint is added to GitHub.</span></div>
+        )}
+      </section>
+
+      <footer><a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a><p>Technical learning for curious people.</p><span>The Connective Tissue</span></footer>
+    </main>
+  );
+}
+
+export default function Home() {
+  const isApiCourse = typeof window !== "undefined" && window.location.pathname.startsWith("/api-basics");
+  return isApiCourse ? <ApiBasics /> : <LearningHub />;
 }

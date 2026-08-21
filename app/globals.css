@@ -29,3 +29,47 @@ footer { max-width:1200px; margin:auto; min-height:150px; display:flex; align-it
 @media (max-width:900px) { .learningShell { display:block; }.lessonNav { position:relative; padding:25px; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; border-bottom:1px solid var(--line); }.progressLabel,.progressTrack { grid-column:1/-1; }.lessonNav button { justify-content:center; font-size:0; }.lessonContent { border:0; }.lessonSection { padding:70px 28px; }.analogyGrid { grid-template-columns:1fr; gap:8px; }.arrowLine { height:40px; transform:rotate(90deg); justify-content:center; }.labGrid { grid-template-columns:1fr; }.heroDiagram { transform:scale(.9); transform-origin:left; }.navMeta { display:none; } }
 @media (max-width:600px) { .topbar { height:62px; padding:0 18px; }.hero { padding:75px 20px 55px; min-height:620px; }.heroActions { align-items:flex-start; flex-direction:column; }.heroDiagram { margin-top:65px; display:grid; grid-template-columns:1fr; transform:none; }.connector { height:85px; }.connector:before { width:1px; height:100%; }.connector span { display:none; }.lessonSection { padding:60px 20px; }.flowCard pre { font-size:10px; padding:18px; }.testCards { flex-direction:column; align-items:flex-start; }.completeCard { align-items:flex-start; flex-wrap:wrap; }footer { flex-direction:column; justify-content:center; gap:15px; text-align:center; } }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; }.pulse { animation:none; } }
+
+.hubPage { min-height:100vh; }
+.hubNavLink,.hubTextLink { color:var(--muted); font-size:12px; }
+.hubHero { max-width:1200px; margin:auto; min-height:650px; padding:105px 32px 85px; position:relative; overflow:hidden; }
+.hubHero:after { content:""; position:absolute; width:520px; height:520px; border:1px solid #2a2a27; border-radius:50%; right:-80px; top:40px; box-shadow:0 0 0 82px #171715,0 0 0 83px #292925,0 0 0 165px #161614; z-index:-1; }
+.hubHero h1 { max-width:930px; }
+.courseShelf { border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:85px max(32px,calc((100vw - 1200px)/2)); }
+.shelfHead { display:flex; justify-content:space-between; align-items:end; gap:40px; margin-bottom:38px; }
+.shelfHead span,.subscribeCopy>span { color:var(--orange); font:10px var(--font-geist-mono); letter-spacing:.16em; }
+.shelfHead h2,.subscribeCopy h2 { margin:10px 0 0; font-size:clamp(36px,5vw,58px); letter-spacing:-.055em; line-height:1; }
+.shelfHead p { color:var(--muted); max-width:390px; line-height:1.55; font-size:13px; }
+.courseGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.courseCard { min-height:390px; padding:24px; border:1px solid var(--line); border-radius:13px; background:var(--panel); display:flex; flex-direction:column; transition:transform .2s,border-color .2s; }
+a.courseCard:hover { transform:translateY(-4px); border-color:var(--orange); }
+.courseCard.featured { border-color:#704432; background:#211b18; }
+.courseCard.upcoming { opacity:.72; }
+.courseMeta { display:flex; justify-content:space-between; color:var(--orange); font:9px var(--font-geist-mono); letter-spacing:.12em; }
+.courseIcon { width:64px; height:64px; margin:48px 0 25px; border-radius:16px; background:var(--orange); color:#211712; display:grid; place-items:center; font:700 15px var(--font-geist-mono); }
+.blueIcon { background:var(--blue); color:#15202a; }
+.courseCard h3 { margin:0 0 12px; font-size:25px; letter-spacing:-.035em; }
+.courseCard p { color:var(--muted); font-size:13px; line-height:1.55; margin:0; }
+.courseFoot { display:flex; justify-content:space-between; gap:12px; border-top:1px solid var(--line); padding-top:17px; margin-top:auto; font-size:10px; color:#7d7d76; }
+.courseFoot b { color:#c7c7bf; }
+.subscribeSection { max-width:1200px; margin:auto; padding:100px 32px; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+.subscribeCopy p { color:var(--muted); line-height:1.6; max-width:510px; }
+.subscribeForm { display:grid; gap:10px; }
+.subscribeForm label { display:block; color:#aaa9a2; font-size:11px; margin-top:7px; }
+.subscribeForm input:not([type=checkbox]),.subscribeForm textarea,.subscribeForm select { width:100%; background:#1a1a18; color:#fff; border:1px solid #45453f; border-radius:9px; padding:14px 16px; font:inherit; }
+.subscribeForm textarea { resize:vertical; min-height:112px; }
+.subscribeForm select { appearance:auto; }
+.subscribeForm .consentCheck { display:flex; gap:10px; align-items:flex-start; line-height:1.45; margin:9px 0 2px; }
+.consentCheck input { margin-top:3px; accent-color:var(--orange); }
+.subscribeForm .registerButton { min-height:52px; border:0; border-radius:9px; padding:0 19px; background:var(--orange); color:#191816; font-weight:750; cursor:pointer; }
+.subscribeForm .registerButton:disabled { cursor:wait; opacity:.7; }
+.subscribeForm small { display:block; color:#6f6f69; margin-top:11px; font-size:9px; }
+.websiteTrap { position:absolute!important; left:-10000px!important; width:1px!important; height:1px!important; opacity:0!important; }
+.subscribeMessage { min-height:18px; margin:10px 0 0; font-size:11px; }.subscribeMessage.sent { color:var(--green); }.subscribeMessage.error { color:var(--red); }
+.subscribePending { border:1px dashed #55554f; background:var(--panel); border-radius:10px; padding:22px; display:flex; flex-direction:column; gap:7px; }
+.subscribePending b { font-size:14px; }.subscribePending span { color:var(--muted); font-size:12px; line-height:1.5; }
+.registrationComplete { border:1px solid #43634c; background:#18211b; border-radius:12px; padding:28px; display:flex; gap:18px; align-items:flex-start; }
+.registrationComplete>span { width:40px; height:40px; border-radius:50%; background:var(--green); color:#122016; display:grid; place-items:center; font-weight:800; }
+.registrationComplete b { font-size:20px; }.registrationComplete p { color:var(--muted); margin:5px 0 20px; font-size:12px; }
+@media (max-width:900px) { .courseGrid { grid-template-columns:1fr; }.courseCard { min-height:330px; }.courseIcon { margin-top:32px; }.subscribeSection { grid-template-columns:1fr; gap:35px; }.shelfHead { align-items:flex-start; flex-direction:column; gap:10px; } }
+@media (max-width:600px) { .hubHero { padding:78px 20px 60px; min-height:590px; }.courseShelf,.subscribeSection { padding:65px 20px; }.hubNavLink { display:none; }.courseCard { min-height:350px; } }

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Private S3 and CloudFront hosting for the API, plainly learning hub
+Description: Private S3 and CloudFront hosting for the Tech Enablement Learning Hub
 
 Parameters:
   DomainName:
@@ -10,6 +10,18 @@ Parameters:
     Type: String
     Default: ""
     Description: Optional ACM certificate ARN from us-east-1 for the custom hostname
+  SubscriberSenderEmail:
+    Type: String
+    Default: learn@theconnectivetissue.co
+    Description: Reserved for the existing SES setup; viewer registration does not send email
+  SubscriberEmailDomain:
+    Type: String
+    Default: theconnectivetissue.co
+    Description: Existing verified SES identity retained for safety but unused by viewer registration
+  SubscriberAllowedOrigin:
+    Type: String
+    Default: https://learn.theconnectivetissue.co
+    Description: Website origin allowed to submit subscription requests
 
 Conditions:
   HasCustomDomain: !And
@@ -49,7 +61,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases: !If [HasCustomDomain, [!Ref DomainName], !Ref AWS::NoValue]
-        Comment: API, plainly learning hub
+        Comment: Tech Enablement Learning Hub
         DefaultCacheBehavior:
           AllowedMethods: [GET, HEAD, OPTIONS]
           CachedMethods: [GET, HEAD, OPTIONS]
@@ -92,6 +104,177 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
 
+  SubscriberContactList:
+    Type: AWS::SES::ContactList
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      ContactListName: tech-enablement-learning-hub
+      Description: Legacy contact list retained but unused by viewer registration
+      Topics:
+        - TopicName: new-lessons
+          DisplayName: New learning-hub lessons
+          Description: New interactive technical lessons and practical explainers
+          DefaultSubscriptionStatus: OPT_IN
+
+  SubscriberEmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      EmailIdentity: !Ref SubscriberEmailDomain
+
+  SubscriberConfirmationTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: token
+          AttributeType: S
+      KeySchema:
+        - AttributeName: token
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  ViewerRegistrationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  SubscriberFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: StoreViewerRegistrations
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt ViewerRegistrationTable.Arn
+
+  SubscriberFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Stores learner registration and content-interest responses
+      Runtime: nodejs22.x
+      Handler: index.handler
+      Role: !GetAtt SubscriberFunctionRole.Arn
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ViewerRegistrationTable
+          ALLOWED_ORIGIN: !Ref SubscriberAllowedOrigin
+      Code:
+        ZipFile: |
+          const { DynamoDBClient, PutItemCommand } = require("@aws-sdk/client-dynamodb");
+          const db = new DynamoDBClient({});
+          const json = (statusCode, body) => ({ statusCode, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+          exports.handler = async (event) => {
+            const method = event.requestContext?.http?.method || "";
+            if (method !== "POST") return json(405, { message: "Method not allowed" });
+            const origin = event.headers?.origin || event.headers?.Origin;
+            if (origin && origin !== process.env.ALLOWED_ORIGIN) return json(403, { message: "Origin not allowed" });
+            let input;
+            try { input = JSON.parse(event.body || "{}"); } catch { return json(400, { message: "Invalid request" }); }
+            if (input.website) return json(202, { message: "Registration complete" });
+            const clean = (value, limit) => String(value || "").trim().slice(0, limit);
+            const email = clean(input.email, 254).toLowerCase();
+            const name = clean(input.name, 80);
+            const contentRequest = clean(input.contentRequest, 1000);
+            const referralSource = clean(input.referralSource, 40);
+            const referralOther = clean(input.referralOther, 120);
+            const sourcePage = clean(input.sourcePage, 200);
+            const consentVersion = clean(input.consentVersion, 30);
+            const allowedSources = new Set(["youtube", "blog", "linkedin", "other"]);
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name || !contentRequest) return json(400, { message: "Complete all required fields" });
+            if (!allowedSources.has(referralSource) || (referralSource === "other" && !referralOther)) return json(400, { message: "Choose how you found the hub" });
+            if (input.consent !== true || !consentVersion) return json(400, { message: "Consent is required" });
+            const createdAt = new Date().toISOString();
+            await db.send(new PutItemCommand({
+              TableName: process.env.TABLE_NAME,
+              Item: {
+                email: { S: email }, name: { S: name }, contentRequest: { S: contentRequest },
+                referralSource: { S: referralSource }, referralOther: { S: referralOther },
+                sourcePage: { S: sourcePage }, consent: { BOOL: true },
+                consentVersion: { S: consentVersion }, createdAt: { S: createdAt }
+              }
+            }));
+            return json(201, { message: "Registration complete" });
+          };
+
+  SubscriberApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: tech-enablement-subscriber-api
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref SubscriberAllowedOrigin
+        AllowMethods:
+          - POST
+        AllowHeaders:
+          - content-type
+        MaxAge: 86400
+
+  SubscriberApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref SubscriberApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt SubscriberFunction.Arn
+      PayloadFormatVersion: "2.0"
+
+  SubscriberPostRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref SubscriberApi
+      RouteKey: POST /subscribe
+      Target: !Sub integrations/${SubscriberApiIntegration}
+
+  SubscriberApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref SubscriberApi
+      StageName: $default
+      AutoDeploy: true
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 3
+        ThrottlingRateLimit: 1
+
+  SubscriberFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SubscriberFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${SubscriberApi}/*/*
+
 Outputs:
   BucketName:
     Description: Deployment destination for the generated static files
@@ -102,3 +285,9 @@ Outputs:
   CloudFrontDomainName:
     Description: Temporary address to test before changing Wix DNS
     Value: !GetAtt Distribution.DomainName
+  ViewerRegistrationUrl:
+    Description: Add this value to the GitHub repository variable AWS_SUBSCRIBE_URL
+    Value: !Sub https://${SubscriberApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/subscribe
+  ViewerRegistrationTableName:
+    Description: DynamoDB table containing registered learners and their content interests
+    Value: !Ref ViewerRegistrationTable

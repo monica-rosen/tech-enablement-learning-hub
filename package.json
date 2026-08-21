@@ -1,5 +1,5 @@
 {
-  "name": "api-plainly-learning-hub",
+  "name": "tech-enablement-learning-hub",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/create-static-routes.mjs",
     "start": "vite preview",
     "test": "npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint app/page.tsx src vite.config.ts"
