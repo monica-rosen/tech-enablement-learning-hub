@@ -232,7 +232,7 @@ function LearningHub() {
   return (
     <main className="hubPage">
       <nav className="topbar" aria-label="Primary navigation">
-        <a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a>
+        <a className="brand" href="/"><span className="brandMark">↗</span> AI Enablement</a>
         <div className="navRight">
           <a className="hubNavLink" href="#courses">Courses</a>
           <a className="smallButton" href="#register">Register</a>
@@ -312,7 +312,7 @@ function LearningHub() {
         )}
       </section>
 
-      <footer><a className="brand" href="/"><span className="brandMark">↗</span> Tech Enablement</a><p>Technical learning for curious people.</p><span>The Connective Tissue</span></footer>
+      <footer><a className="brand" href="/"><span className="brandMark">↗</span> AI Enablement</a><p>Technical learning for curious people.</p><span>The Connective Tissue</span></footer>
     </main>
   );
 }

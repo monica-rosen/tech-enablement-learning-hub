@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Private S3 and CloudFront hosting for the Tech Enablement Learning Hub
+Description: Private S3 and CloudFront hosting for the AI Enablement Learning Hub
 
 Parameters:
   DomainName:
@@ -50,7 +50,7 @@ Resources:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Description: Access from CloudFront to the private learning-hub bucket
+        Description: Access from CloudFront to the private AI Enablement Learning Hub bucket
         Name: !Sub "${AWS::StackName}-oac"
         OriginAccessControlOriginType: s3
         SigningBehavior: always
@@ -61,7 +61,7 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases: !If [HasCustomDomain, [!Ref DomainName], !Ref AWS::NoValue]
-        Comment: Tech Enablement Learning Hub
+        Comment: AI Enablement Learning Hub
         DefaultCacheBehavior:
           AllowedMethods: [GET, HEAD, OPTIONS]
           CachedMethods: [GET, HEAD, OPTIONS]
@@ -231,7 +231,7 @@ Resources:
   SubscriberApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: tech-enablement-subscriber-api
+      Name: ai-enablement-viewer-registration-api
       ProtocolType: HTTP
       CorsConfiguration:
         AllowOrigins:

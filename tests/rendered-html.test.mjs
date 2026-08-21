@@ -6,7 +6,7 @@ const distRoot = new URL("../dist/", import.meta.url);
 
 test("produces a portable static site", async () => {
   const html = await readFile(new URL("index.html", distRoot), "utf8");
-  assert.match(html, /<title>Tech Enablement Learning Hub<\/title>/);
+  assert.match(html, /<title>AI Enablement Learning Hub<\/title>/);
   assert.match(html, /<div id="root"><\/div>/);
   assert.doesNotMatch(html, /cloudflare|vinext|_next/i);
 
@@ -17,7 +17,7 @@ test("produces a portable static site", async () => {
 
 test("publishes the API course at its own durable path", async () => {
   const html = await readFile(new URL("api-basics/index.html", distRoot), "utf8");
-  assert.match(html, /<title>What Is an API\? — Tech Enablement<\/title>/);
+  assert.match(html, /<title>What Is an API\? — AI Enablement<\/title>/);
   assert.match(html, /<div id="root"><\/div>/);
 });
 
