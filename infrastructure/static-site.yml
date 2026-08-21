@@ -56,6 +56,28 @@ Resources:
         SigningBehavior: always
         SigningProtocol: sigv4
 
+  CleanUrlFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Resolve clean learning-hub routes to their static index files
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+
+          if (uri.endsWith('/')) {
+            request.uri = uri + 'index.html';
+          } else if (!uri.split('/').pop().includes('.')) {
+            request.uri = uri + '/index.html';
+          }
+
+          return request;
+        }
+      Name: !Sub "${AWS::StackName}-clean-urls"
+
   Distribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -67,6 +89,9 @@ Resources:
           CachedMethods: [GET, HEAD, OPTIONS]
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
           Compress: true
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt CleanUrlFunction.FunctionARN
           TargetOriginId: site-bucket
           ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
