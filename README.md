@@ -1,4 +1,4 @@
-# Tech Enablement Learning Hub
+# AI Enablement Learning Hub
 
 This is a portable static website. The production build is ordinary HTML, CSS,
 JavaScript, and image files with no server, database, or OpenAI runtime required.
