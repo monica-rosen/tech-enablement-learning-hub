@@ -27,3 +27,11 @@ test("copies the public brand assets", async () => {
     access(new URL("og.png", distRoot)),
   ]);
 });
+
+test("includes a returning-learner soft-gate path", async () => {
+  const source = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /Already registered on another device\?/);
+  assert.match(source, /Continue to the course/);
+  assert.match(source, /localStorage\.setItem\("learning-hub-registered", "yes"\)/);
+  assert.match(source, /location\.assign\("\/api-basics\/"\)/);
+});

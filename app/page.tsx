@@ -229,6 +229,12 @@ function LearningHub() {
     }
   }
 
+  function continueAsRegistered() {
+    window.localStorage.setItem("learning-hub-registered", "yes");
+    setRegistered(true);
+    window.location.assign("/api-basics/");
+  }
+
   return (
     <main className="hubPage">
       <nav className="topbar" aria-label="Primary navigation">
@@ -303,6 +309,10 @@ function LearningHub() {
             {referralSource === "other" && <><label htmlFor="referral-other">Where did you find us?</label><input id="referral-other" name="referralOther" type="text" placeholder="Tell us where" required maxLength={120} /></>}
             <label className="consentCheck"><input name="consent" type="checkbox" value="yes" required /><span>I agree that The Connective Tissue may store this information to understand and improve its learning audience.</span></label>
             <button className="registerButton" type="submit" disabled={subscribeState === "sending"}>{subscribeState === "sending" ? "Registering…" : "Register and unlock the course"} <span>→</span></button>
+            <div className="returningLearner">
+              <span>Already registered on another device?</span>
+              <button type="button" onClick={continueAsRegistered}>Continue to the course →</button>
+            </div>
             <input className="websiteTrap" name="website" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" />
             <small>Your information is stored privately in the learning hub&apos;s AWS account. You will not be added to an email list.</small>
             <p className={`subscribeMessage ${subscribeState}`} aria-live="polite">{subscribeState === "sent" ? "Registration complete. The course is unlocked." : subscribeState === "error" ? "Something went wrong. Please try again." : ""}</p>

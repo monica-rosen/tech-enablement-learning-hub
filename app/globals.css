@@ -63,6 +63,10 @@ a.courseCard:hover { transform:translateY(-4px); border-color:var(--orange); }
 .consentCheck input { margin-top:3px; accent-color:var(--orange); }
 .subscribeForm .registerButton { min-height:52px; border:0; border-radius:9px; padding:0 19px; background:var(--orange); color:#191816; font-weight:750; cursor:pointer; }
 .subscribeForm .registerButton:disabled { cursor:wait; opacity:.7; }
+.returningLearner { display:flex; justify-content:center; align-items:baseline; flex-wrap:wrap; gap:5px; margin-top:7px; color:#7d7d76; font-size:11px; }
+.returningLearner button { border:0; padding:0; background:transparent; color:#d7a28a; font:inherit; font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.returningLearner button:hover { color:var(--orange); }
+.returningLearner button:focus-visible { outline:2px solid var(--orange); outline-offset:4px; border-radius:2px; }
 .subscribeForm small { display:block; color:#6f6f69; margin-top:11px; font-size:9px; }
 .websiteTrap { position:absolute!important; left:-10000px!important; width:1px!important; height:1px!important; opacity:0!important; }
 .subscribeMessage { min-height:18px; margin:10px 0 0; font-size:11px; }.subscribeMessage.sent { color:var(--green); }.subscribeMessage.error { color:var(--red); }
