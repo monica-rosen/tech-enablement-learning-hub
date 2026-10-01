@@ -282,6 +282,11 @@ function LearningHub() {
         </div>
       </section>
 
+      <section className="checklistResource" aria-labelledby="checklist-resource-title">
+        <div><span>VISUAL CHECKLIST</span><h2 id="checklist-resource-title">Missing Claude skill?</h2><p>Check your account, computer, and project with this animated quick reference.</p></div>
+        <a className="primaryButton" href="/missing-claude-skill/">Open checklist <span>→</span></a>
+      </section>
+
       <section className="subscribeSection" id="register">
         <div className="subscribeCopy">
           <span>REGISTER TO LEARN</span>
