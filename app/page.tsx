@@ -287,6 +287,11 @@ function LearningHub() {
         <a className="primaryButton" href="/missing-claude-skill/">Open checklist <span>→</span></a>
       </section>
 
+      <section className="checklistResource" aria-labelledby="json-resource-title">
+        <div><span>QUICK REFERENCE</span><h2 id="json-resource-title">JSON cheat sheet</h2><p>Keys, values, nesting, lists, and commas, explained with everyday analogies.</p></div>
+        <a className="primaryButton" href="/json-cheat-sheet/">Open cheat sheet <span>→</span></a>
+      </section>
+
       <section className="subscribeSection" id="register">
         <div className="subscribeCopy">
           <span>REGISTER TO LEARN</span>
