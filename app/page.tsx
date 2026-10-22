@@ -241,6 +241,7 @@ function LearningHub() {
         <a className="brand" href="/"><span className="brandMark">↗</span> AI Enablement</a>
         <div className="navRight">
           <a className="hubNavLink" href="#courses">Courses</a>
+          <a className="hubNavLink" href="#vulnerability-explainers">Explainers</a>
           <a className="smallButton" href="#register">Register</a>
         </div>
       </nav>
@@ -280,6 +281,18 @@ function LearningHub() {
             <div className="courseFoot"><span>GitHub fundamentals</span><b>Coming soon</b></div>
           </div>
         </div>
+      </section>
+
+
+      <section className="courseShelf" id="vulnerability-explainers" aria-labelledby="vulnerability-title">
+        <div className="shelfHead"><div><span>VULNERABILITY EXPLAINERS</span><h2 id="vulnerability-title">Understand the risk. See what helps.</h2></div><p>Short, interactive explanations of real security flaws, in plain English. Explore freely—no registration needed.</p></div>
+        <a className="courseCard featured vulnerabilityCard" href="/vulnerability-explainers/php2shell/">
+          <div className="courseMeta"><span>INTERACTIVE EXPLAINER</span><b>SECURITY</b></div>
+          <div className="courseIcon" aria-hidden="true">PHP</div>
+          <h3>PHP2SHELL, explained</h3>
+          <p>See how two PHP memory flaws can put a web server at risk. Try the simulated attack, switch defenses on, and check upstream patch versions.</p>
+          <div className="courseFoot"><span>5 min · Attack simulation</span><b>Explore the explainer →</b></div>
+        </a>
       </section>
 
       <section className="checklistResource" aria-labelledby="checklist-resource-title">
