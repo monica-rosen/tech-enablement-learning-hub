@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const lessons = [
   { id: "idea", label: "The idea" },
@@ -193,6 +193,25 @@ function ApiBasics() {
 }
 
 function LearningHub() {
+  useEffect(() => {
+    // The hub renders on the client, after the browser's initial fragment lookup.
+    // Retry once the target sections exist so links from standalone pages land correctly.
+    let frame = 0;
+    const scrollToFragment = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const id = window.location.hash.slice(1);
+        if (id) document.getElementById(id)?.scrollIntoView({ block: "start", behavior: "instant" });
+      });
+    };
+    scrollToFragment();
+    window.addEventListener("hashchange", scrollToFragment);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("hashchange", scrollToFragment);
+    };
+  }, []);
+
   const subscribeUrl = import.meta.env.VITE_SUBSCRIBE_URL as string | undefined;
   const [subscribeState, setSubscribeState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [registered, setRegistered] = useState(() => typeof window !== "undefined" && window.localStorage.getItem("learning-hub-registered") === "yes");
