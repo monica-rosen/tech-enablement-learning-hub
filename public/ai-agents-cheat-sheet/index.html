@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Agents, Explained — AI Enablement</title><meta name="description" content="A plain-English cheat sheet on AI agents: chatbot vs. agent, the 3 parts every agent has, how agents get built, and what to check when one fails."><link rel="canonical" href="https://learn.theconnectivetissue.co/ai-agents-cheat-sheet/"><meta property="og:title" content="AI Agents, Explained — AI Enablement"><meta property="og:description" content="A chatbot answers. An agent acts. The model that decides, the tools that do, the memory that learns."><meta property="og:image" content="https://learn.theconnectivetissue.co/og.png"><link rel="icon" href="/favicon.svg"><style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;background:#141413;color:#fff}*{box-sizing:border-box}body{margin:0}a{color:inherit}nav{border-bottom:1px solid #353531;padding:22px max(20px,calc((100% - 1200px)/2));display:flex;justify-content:space-between;align-items:center;gap:20px}nav a{text-decoration:none;font-size:14px}.brand{font-weight:650}.brand span{display:inline-grid;place-items:center;background:#d97757;color:#141413;width:27px;height:27px;border-radius:7px;margin-right:10px}.back{color:#a7a79f}main{max-width:1200px;margin:auto;padding:44px 24px 24px}header{max-width:1200px;margin:0 auto 36px}.eyebrow{color:#d97757;letter-spacing:.12em;font-size:11px;font-weight:650}h1{font-size:clamp(34px,5vw,58px);letter-spacing:-.05em;line-height:1.05;margin:14px 0}header p{color:#a7a79f;font-size:17px;line-height:1.6;max-width:62ch}a:focus-visible,button:focus-visible{outline:3px solid #6a9bcc;outline-offset:4px}.note{color:#a7a79f;font-size:12px}footer{max-width:1200px;margin:0 auto;padding:24px;border-top:1px solid #353531;color:#a7a79f;font-size:12px}@media(max-width:600px){main{padding:30px 12px}header{padding:0 8px}nav{padding:18px 20px}.back{font-size:12px}}
+
+section{margin-bottom:52px}
+h2{font-size:clamp(22px,3vw,30px);letter-spacing:-.02em;margin:0 0 8px}
+.sectionLabel{color:#a7a79f;font-size:11px;letter-spacing:.12em;font-weight:650;margin-bottom:10px}
+.sectionIntro{color:#a7a79f;font-size:15px;line-height:1.6;max-width:62ch;margin:0 0 22px}
+
+.cmpGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.cmpCard{border:1px solid #353531;border-radius:12px;padding:22px;background:#1a1917;display:flex;flex-direction:column;gap:14px}
+.cmpCard.agent{border-color:#d97757}
+.cmpTag{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.1em;font-weight:650;color:#6a9bcc}
+.cmpCard.agent .cmpTag{color:#d97757}
+.cmpQuote{font-size:14px;color:#fff;background:#141413;border:1px solid #353531;border-radius:8px;padding:10px 12px}
+.cmpOut{font-size:14px;line-height:1.55;color:#a7a79f}
+.cmpOut b{color:#fff;display:block;margin-bottom:4px}
+.cmpChecks{display:flex;flex-direction:column;gap:6px;font-size:13px;color:#a7a79f}
+.cmpChecks span{color:#d97757}
+.cmpCaption{font-size:13px;color:#a7a79f;border-top:1px solid #353531;padding-top:12px;margin-top:auto}
+
+.partsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.part{border:1px solid #353531;border-radius:12px;padding:20px;background:#1a1917}
+.partIcon{width:40px;height:40px;border-radius:50%;background:#20201e;border:1px solid #353531;display:grid;place-items:center;font-size:18px;margin-bottom:12px}
+.part h3{font-size:16px;margin:0 0 8px}
+.part ul{margin:0;padding-left:18px;color:#a7a79f;font-size:13.5px;line-height:1.7}
+.mcpNote{margin-top:16px;font-size:13.5px;color:#a7a79f;border-left:2px solid #d97757;padding-left:14px}
+
+.patternsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.patternCard{border:1px solid #353531;border-radius:12px;padding:20px;background:#1a1917}
+.patternNum{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#20201e;border:1px solid #353531;color:#d97757;font-size:12px;font-weight:650;margin-bottom:10px}
+.patternCard h3{font-size:15px;margin:0 0 6px}
+.patternCard p{font-size:13.5px;color:#a7a79f;line-height:1.6;margin:0 0 8px}
+.patternFit{font-size:11px;letter-spacing:.08em;color:#6a9bcc}
+
+.debugGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.debugCard{border:1px solid #353531;border-radius:12px;padding:20px;background:#1a1917}
+.debugCard .partIcon{background:#231411;border-color:#d97757;color:#d97757}
+.debugCard h3{font-size:15px;margin:0 0 6px}
+.debugCard p{font-size:13.5px;color:#a7a79f;line-height:1.6;margin:0}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid #353531;vertical-align:top}
+th{color:#a7a79f;font-size:11px;letter-spacing:.08em;font-weight:650}
+td:first-child{color:#d97757;font-weight:650;white-space:nowrap}
+.tableWrap{overflow-x:auto;border:1px solid #353531;border-radius:12px;background:#1a1917}
+.tableWrap table{margin:0}
+.tableWrap th:first-child,.tableWrap td:first-child{padding-left:16px}
+
+.insteadGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.insteadRow{border:1px solid #353531;border-radius:10px;padding:16px;background:#1a1917;display:flex;flex-direction:column;gap:8px}
+.insteadOld{font-size:13px;color:#a7a79f;text-decoration:line-through;text-decoration-color:#55554f}
+.insteadNew{font-size:14px;color:#fff}
+.insteadNew b{color:#d97757}
+
+.ctaBox{border:1px solid #d97757;border-radius:12px;padding:26px;background:#1a1917;display:flex;flex-direction:column;gap:14px}
+.ctaBox h2{margin:0}
+.ctaRow{display:flex;gap:12px;flex-wrap:wrap}
+.primaryButton{font-size:13px;font-weight:650;border:1px solid #d97757;background:#d97757;color:#141413;padding:11px 18px;border-radius:8px;text-decoration:none}
+.secondaryButton{font-size:13px;border:1px solid #55554f;background:#20201e;color:#fff;padding:11px 18px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.youtube{width:22px;height:16px;flex:none}
+</style></head><body>
+<nav aria-label="Primary navigation"><a class="brand" href="/"><span aria-hidden="true">↗</span>AI Enablement</a><a class="back" href="/">← Learning hub</a></nav>
+<main>
+  <header>
+    <div class="eyebrow">QUICK REFERENCE · AI AGENTS</div>
+    <h1>A chatbot answers.<br>An agent acts.</h1>
+    <p>Three things turn a chatbot into an agent: a model that decides, tools that act, and memory that learns. Here's the whole idea, plus the cheat sheet, on one page.</p>
+  </header>
+
+  <section aria-labelledby="cmp-title">
+    <div class="sectionLabel">SAME QUESTION, DIFFERENT OUTCOME</div>
+    <h2 id="cmp-title">"I want to switch my plan and update my payment method."</h2>
+    <p class="sectionIntro">Ask a chatbot and an agent the same thing. They don't do the same amount of work.</p>
+    <div class="cmpGrid">
+      <div class="cmpCard">
+        <span class="cmpTag">💬 CHATBOT</span>
+        <div class="cmpQuote">"Here are the steps to update your plan…"</div>
+        <div class="cmpOut">
+          <b>1. Go to settings</b>
+          2. Click subscriptions<br>3. Enter your card details
+        </div>
+        <div class="cmpCaption">Right answer. Still on you to do it.</div>
+      </div>
+      <div class="cmpCard agent">
+        <span class="cmpTag">🤖 AGENT</span>
+        <div class="cmpQuote">"Done. I updated it for you."</div>
+        <div class="cmpChecks">
+          <div><span>✓</span> Plan updated</div>
+          <div><span>✓</span> Card updated</div>
+          <div><span>✓</span> Email sent</div>
+          <div><span>✓</span> Team notified</div>
+        </div>
+        <div class="cmpCaption">Chatbot told you what to do. Agent did it.</div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="parts-title">
+    <div class="sectionLabel">EVERY AGENT HAS 3 PARTS</div>
+    <h2 id="parts-title">Model, tools, memory</h2>
+    <p class="sectionIntro">Strip any agent down and you'll find the same three pieces.</p>
+    <div class="partsGrid">
+      <div class="part">
+        <div class="partIcon">🧠</div>
+        <h3>Model — the brain</h3>
+        <ul><li>Reads the situation</li><li>Decides what's next</li><li>Runs the loop until done</li></ul>
+      </div>
+      <div class="part">
+        <div class="partIcon">🛠️</div>
+        <h3>Tools — the hands</h3>
+        <ul><li>Charge a card</li><li>Send a message</li><li>Look things up</li></ul>
+      </div>
+      <div class="part">
+        <div class="partIcon">📓</div>
+        <h3>Memory — the notebook</h3>
+        <ul><li>This session</li><li>This week</li><li>Long-term history</li></ul>
+      </div>
+    </div>
+    <p class="mcpNote">Tools are how the agent acts. <b style="color:#fff">MCP</b> is how tools connect — think of it as a universal plug. Hard or risky task? The model should pick a thinking model and reflect first, then: decide → use a tool → read the result → repeat until done.</p>
+  </section>
+
+  <section aria-labelledby="patterns-title">
+    <div class="sectionLabel">HOW AGENTS GET BUILT</div>
+    <h2 id="patterns-title">Three ways to put agents together</h2>
+    <p class="sectionIntro">Start simple. Add structure only when the job needs it.</p>
+    <div class="patternsGrid">
+      <div class="patternCard">
+        <span class="patternNum">1</span>
+        <h3>Single agent</h3>
+        <p>One agent, one job. It decides, acts, and remembers on its own.</p>
+        <span class="patternFit">SIMPLE</span>
+      </div>
+      <div class="patternCard">
+        <span class="patternNum">2</span>
+        <h3>Sub-agent</h3>
+        <p>The main agent hands off specialist work — like payment — and stays focused on its own job.</p>
+        <span class="patternFit">MODERATE</span>
+      </div>
+      <div class="patternCard">
+        <span class="patternNum">3</span>
+        <h3>Orchestrator</h3>
+        <p>One entry point reads the request and routes it to the right expert agent. Routing is its own skill.</p>
+        <span class="patternFit">COMPLEX</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="debug-title">
+    <div class="sectionLabel">WHEN AN AGENT FAILS</div>
+    <h2 id="debug-title">Check the 3 parts</h2>
+    <p class="sectionIntro">Most agent problems trace back to one of these three.</p>
+    <div class="debugGrid">
+      <div class="debugCard">
+        <div class="partIcon">🧠</div>
+        <h3>Wrong decision</h3>
+        <p>The model picked the wrong step.</p>
+      </div>
+      <div class="debugCard">
+        <div class="partIcon">🔧</div>
+        <h3>Bad tool</h3>
+        <p>A tool was missing or returned bad data.</p>
+      </div>
+      <div class="debugCard">
+        <div class="partIcon">📓</div>
+        <h3>Missing context</h3>
+        <p>Memory didn't have what it needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="cheatsheet-title">
+    <div class="sectionLabel">THE AGENT CHEAT SHEET</div>
+    <h2 id="cheatsheet-title">Six terms, plain English</h2>
+    <div class="tableWrap">
+      <table>
+        <thead><tr><th scope="col">Term</th><th scope="col">What it actually does</th><th scope="col">Plain-English analogy</th></tr></thead>
+        <tbody>
+          <tr><td>Model</td><td>The AI that reads the situation and picks the next step</td><td>The brain</td></tr>
+          <tr><td>Tools</td><td>Let the agent update, send, charge, or look things up</td><td>The hands</td></tr>
+          <tr><td>Memory</td><td>What the agent knows now and remembers later</td><td>A notebook it keeps</td></tr>
+          <tr><td>MCP</td><td>The standard way tools plug into an agent</td><td>A universal plug</td></tr>
+          <tr><td>Sub-agent</td><td>A specialist that handles one slice of the job</td><td>Handing it to the accountant</td></tr>
+          <tr><td>Orchestrator</td><td>Reads the request and routes it to the right agent</td><td>The front-desk receptionist</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="instead-title">
+    <div class="sectionLabel">WHAT THIS MEANS FOR YOU</div>
+    <h2 id="instead-title">Try asking for action, not just answers</h2>
+    <div class="insteadGrid">
+      <div class="insteadRow">
+        <span class="insteadOld">"What can you do?"</span>
+        <span class="insteadNew">Try: <b>"What can you tell me?"</b></span>
+      </div>
+      <div class="insteadRow">
+        <span class="insteadOld">"Can you handle it?"</span>
+        <span class="insteadNew">Try: <b>"Can you explain this?"</b></span>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px">Acts with your tools = agent. Only answers = chatbot.</p>
+  </section>
+
+  <section aria-labelledby="cta-title">
+    <div class="ctaBox">
+      <h2 id="cta-title">One task you'd want an agent to handle, not just answer?</h2>
+      <p class="sectionIntro" style="margin-bottom:0">Ask your tools: "what can you do?" Then come register for the learning hub to help shape what gets built next.</p>
+      <div class="ctaRow">
+        <a class="primaryButton" href="/#register">Register on the learning hub →</a>
+        <a class="secondaryButton" href="https://www.youtube.com/@monica-rose-channel" target="_blank" rel="noopener noreferrer"><svg class="youtube" viewBox="0 0 28 20" aria-hidden="true"><rect width="28" height="20" rx="5" fill="#ff0000"/><path d="M11 5.5 20 10 11 14.5Z" fill="#fff"/></svg>Watch on YouTube ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>The Connective Tissue · Technical learning for curious people.</footer>
+</body></html>

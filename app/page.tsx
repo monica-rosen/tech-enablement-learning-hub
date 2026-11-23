@@ -324,6 +324,11 @@ function LearningHub() {
         <a className="primaryButton" href="/json-cheat-sheet/">Open cheat sheet <span>→</span></a>
       </section>
 
+      <section className="checklistResource" aria-labelledby="agents-resource-title">
+        <div><span>QUICK REFERENCE</span><h2 id="agents-resource-title">AI agents, explained</h2><p>Chatbot vs. agent, the 3 parts every agent has, and the agent cheat sheet.</p></div>
+        <a className="primaryButton" href="/ai-agents-cheat-sheet/">Open cheat sheet <span>→</span></a>
+      </section>
+
       <section className="subscribeSection" id="register">
         <div className="subscribeCopy">
           <span>REGISTER TO LEARN</span>
