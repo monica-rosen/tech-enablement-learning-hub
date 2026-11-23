@@ -260,6 +260,7 @@ function LearningHub() {
         <a className="brand" href="/"><span className="brandMark">↗</span> AI Enablement</a>
         <div className="navRight">
           <a className="hubNavLink" href="#courses">Courses</a>
+          <a className="hubNavLink" href="#cheat-sheets">Checklist</a>
           <a className="hubNavLink" href="#vulnerability-explainers">Explainers</a>
           <a className="smallButton" href="#register">Register</a>
         </div>
@@ -267,7 +268,7 @@ function LearningHub() {
 
       <section className="hubHero">
         <div className="eyebrow"><span>LEARN BY DOING</span><i /> Plain English · Practical labs</div>
-        <h1>Technical ideas,<br /><em>made usable.</em></h1>
+        <h1>The tech you use,<br /><em>finally explained.</em></h1>
         <p className="lede">Short, interactive lessons for curious people who want to understand the technology shaping their work—without getting buried in jargon.</p>
         <div className="heroActions">
           <a className="primaryButton" href={registered ? "/api-basics/" : "#register"}>{registered ? "Start with API basics" : "Register to start"} <span>→</span></a>
@@ -276,7 +277,7 @@ function LearningHub() {
       </section>
 
       <section className="courseShelf" id="courses">
-        <div className="shelfHead"><div><span>COURSE LIBRARY</span><h2>Start with one useful idea.</h2></div><p>Each course combines a walkthrough, a hands-on lab, a knowledge check and a badge.</p></div>
+        <div className="shelfHead"><div><span>LEARNING LIBRARY</span><h2>Start with one useful idea.</h2></div><p>Full interactive courses with labs and badges, plus quick cheat sheets you can skim in minutes.</p></div>
         <div className="courseGrid">
           <a className="courseCard featured" href={registered ? "/api-basics/" : "#register"}>
             <div className="courseMeta"><span>AVAILABLE NOW</span><b>01</b></div>
@@ -299,9 +300,34 @@ function LearningHub() {
             <p>Understand repositories, branches, changes and automated publishing as one visual workflow.</p>
             <div className="courseFoot"><span>GitHub fundamentals</span><b>Coming soon</b></div>
           </div>
+          <a className="courseCard" href="/json-cheat-sheet/">
+            <div className="courseMeta"><span>QUICK REFERENCE</span><b>04</b></div>
+            <div className="courseIcon">JSON</div>
+            <h3>JSON cheat sheet</h3>
+            <p>Keys, values, nesting, lists, and commas, explained with everyday analogies.</p>
+            <div className="courseFoot"><span>Image reference</span><b>Open cheat sheet →</b></div>
+          </a>
+          <a className="courseCard featured" href="/ai-agents-cheat-sheet/">
+            <div className="courseMeta"><span>QUICK REFERENCE</span><b>05</b></div>
+            <div className="courseIcon">AGENT</div>
+            <h3>AI agents, explained</h3>
+            <p>Chatbot vs. agent, the 3 parts every agent has, and the agent cheat sheet.</p>
+            <div className="courseFoot"><span>6 min read</span><b>Open cheat sheet →</b></div>
+          </a>
         </div>
       </section>
 
+
+      <section className="courseShelf" id="cheat-sheets" aria-labelledby="cheatsheets-title">
+        <div className="shelfHead"><div><span>QUICK CHECKLIST</span><h2 id="cheatsheets-title">Keep this one handy.</h2></div><p>A visual checklist you can bookmark and come back to. No registration needed.</p></div>
+        <a className="courseCard featured vulnerabilityCard" href="/missing-claude-skill/">
+          <div className="courseMeta"><span>VISUAL CHECKLIST</span><b>CLAUDE SKILLS</b></div>
+          <div className="courseIcon blueIcon">SKL</div>
+          <h3>Missing Claude skill?</h3>
+          <p>Check your account, computer, and project with this animated quick reference.</p>
+          <div className="courseFoot"><span>Illustrated checklist</span><b>Open checklist →</b></div>
+        </a>
+      </section>
 
       <section className="courseShelf" id="vulnerability-explainers" aria-labelledby="vulnerability-title">
         <div className="shelfHead"><div><span>VULNERABILITY EXPLAINERS</span><h2 id="vulnerability-title">Understand the risk. See what helps.</h2></div><p>Short, interactive explanations of real security flaws, in plain English. Explore freely—no registration needed.</p></div>
@@ -312,21 +338,6 @@ function LearningHub() {
           <p>See how two PHP memory flaws can put a web server at risk. Try the simulated attack, switch defenses on, and check upstream patch versions.</p>
           <div className="courseFoot"><span>5 min · Attack simulation</span><b>Explore the explainer →</b></div>
         </a>
-      </section>
-
-      <section className="checklistResource" aria-labelledby="checklist-resource-title">
-        <div><span>VISUAL CHECKLIST</span><h2 id="checklist-resource-title">Missing Claude skill?</h2><p>Check your account, computer, and project with this animated quick reference.</p></div>
-        <a className="primaryButton" href="/missing-claude-skill/">Open checklist <span>→</span></a>
-      </section>
-
-      <section className="checklistResource" aria-labelledby="json-resource-title">
-        <div><span>QUICK REFERENCE</span><h2 id="json-resource-title">JSON cheat sheet</h2><p>Keys, values, nesting, lists, and commas, explained with everyday analogies.</p></div>
-        <a className="primaryButton" href="/json-cheat-sheet/">Open cheat sheet <span>→</span></a>
-      </section>
-
-      <section className="checklistResource" aria-labelledby="agents-resource-title">
-        <div><span>QUICK REFERENCE</span><h2 id="agents-resource-title">AI agents, explained</h2><p>Chatbot vs. agent, the 3 parts every agent has, and the agent cheat sheet.</p></div>
-        <a className="primaryButton" href="/ai-agents-cheat-sheet/">Open cheat sheet <span>→</span></a>
       </section>
 
       <section className="subscribeSection" id="register">
